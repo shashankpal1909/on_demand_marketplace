@@ -1,0 +1,12 @@
+aiosmtplib
+alembic
+bcrypt
+fastapi
+fastapi-mail
+passlib
+psycopg2-binary
+python_jose
+pydantic
+pydantic_settings
+sqlalchemy
+uvicorn

@@ -1,0 +1,3 @@
+psql -d on_demand_marketplace -U myuser -h localhost -p 8888 -W
+
+update users set role = 'admin' where id = '11cafdce-2efb-4af8-bf86-9f4e883fd0a2';
