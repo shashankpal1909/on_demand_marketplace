@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 import uuid
+
+from pydantic import BaseModel
+
 from app.schemas.user import User
 
 

@@ -1,6 +1,8 @@
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import uuid
+
 from app.api import dependencies
 from app.models.service import Service as ServiceModel
 from app.models.user import User as UserModel, UserRole
@@ -11,9 +13,9 @@ router = APIRouter()
 
 @router.post("/", response_model=ServiceSchema)
 def create_service(
-    service: ServiceCreate,
-    db: Session = Depends(dependencies.get_db),
-    current_user: UserModel = Depends(dependencies.get_current_user),
+        service: ServiceCreate,
+        db: Session = Depends(dependencies.get_db),
+        current_user: UserModel = Depends(dependencies.get_current_user),
 ):
     if current_user.role != UserRole.provider:
         raise HTTPException(status_code=403, detail="Not authorized to create service")

@@ -1,5 +1,5 @@
 # Use the official FastAPI image from Docker Hub
-FROM python:3.9-slim-buster
+FROM python:3.12-slim
 
 # Set the working directory
 WORKDIR /app

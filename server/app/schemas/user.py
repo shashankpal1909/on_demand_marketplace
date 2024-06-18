@@ -1,10 +1,11 @@
-from pydantic import BaseModel
 import uuid
+
+from pydantic import BaseModel, EmailStr
 
 
 class UserBase(BaseModel):
     username: str
-    email: str
+    email: EmailStr
 
 
 class UserCreate(UserBase):
@@ -25,7 +26,7 @@ class UserLogin(BaseModel):
     password: str
 
 
-class Token(BaseModel):
+class AuthToken(BaseModel):
     access_token: str
     token_type: str
 
@@ -33,3 +34,12 @@ class Token(BaseModel):
 class UserChangePassword(BaseModel):
     current_password: str
     new_password: str
+
+
+class UserForgotPassword(BaseModel):
+    email: EmailStr
+
+
+class UserResetPassword(BaseModel):
+    password: str
+    token: uuid.UUID

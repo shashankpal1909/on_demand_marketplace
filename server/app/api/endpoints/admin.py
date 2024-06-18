@@ -14,8 +14,8 @@ router = APIRouter()
 
 @router.get("/users", response_model=List[UserSchema])
 def list_users(
-    db: Session = Depends(dependencies.get_db),
-    current_user: UserModel = Depends(dependencies.get_current_user),
+        db: Session = Depends(dependencies.get_db),
+        current_user: UserModel = Depends(dependencies.get_current_user),
 ):
     if current_user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="Not authorized")
@@ -25,8 +25,8 @@ def list_users(
 
 @router.get("/services", response_model=List[ServiceSchema])
 def list_services(
-    db: Session = Depends(dependencies.get_db),
-    current_user: ServiceModel = Depends(dependencies.get_current_user),
+        db: Session = Depends(dependencies.get_db),
+        current_user: ServiceModel = Depends(dependencies.get_current_user),
 ):
     if current_user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="Not authorized")

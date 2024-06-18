@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Boolean, UUID, Enum
-from sqlalchemy.orm import relationship
-import uuid
 import enum
+import uuid
+
+from sqlalchemy import Column, String, Boolean, UUID, Enum, DateTime, func
+from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
@@ -21,3 +22,5 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     role = Column(Enum(UserRole), default=UserRole.customer)
     services = relationship("Service", back_populates="provider")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

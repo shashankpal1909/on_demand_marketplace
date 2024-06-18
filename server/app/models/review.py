@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, UUID
 import uuid
+
+from sqlalchemy import Column, Integer, String, ForeignKey, UUID, DateTime, func
 
 from app.db.session import Base
 
@@ -10,3 +11,5 @@ class Review(Base):
     booking_id = Column(UUID(as_uuid=True), ForeignKey("bookings.id"))
     rating = Column(Integer)
     comment = Column(String)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

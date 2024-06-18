@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, UUID
-from sqlalchemy.orm import relationship
 import uuid
+
+from sqlalchemy import Column, String, ForeignKey, UUID, DateTime, func
+from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
@@ -13,3 +14,5 @@ class Service(Base):
     provider_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     provider = relationship("User", back_populates="services")
     bookings = relationship("Booking", back_populates="service")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, UUID
-from sqlalchemy.orm import relationship
 import uuid
+
+from sqlalchemy import Column, ForeignKey, String, UUID, DateTime, func
+from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
@@ -14,3 +15,5 @@ class Booking(Base):
     status = Column(String, default="pending")
     service = relationship("Service", back_populates="bookings")
     customer = relationship("User")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

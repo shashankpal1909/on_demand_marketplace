@@ -1,6 +1,7 @@
-from datetime import datetime
-from pydantic import BaseModel
 import uuid
+from datetime import datetime
+
+from pydantic import BaseModel
 
 from app.schemas.service import Service
 from app.schemas.user import User
