@@ -2,28 +2,28 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.endpoints import users, bookings, services, reviews, admin
-from app.db.session import engine, Base
 
 app = FastAPI()
 
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust for specific domains in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+api_v1 = FastAPI()
 
 # Include routers
-app.include_router(users.router, prefix="/users", tags=["users"])
-app.include_router(services.router, prefix="/services", tags=["services"])
-app.include_router(bookings.router, prefix="/bookings", tags=["bookings"])
-app.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
-app.include_router(admin.router, prefix="/admin", tags=["admin"])
+api_v1.include_router(users.router, prefix="/users", tags=["users"])
+api_v1.include_router(services.router, prefix="/services", tags=["services"])
+api_v1.include_router(bookings.router, prefix="/bookings", tags=["bookings"])
+api_v1.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
+api_v1.include_router(admin.router, prefix="/admin", tags=["admin"])
+
+app.mount("/api/v1", api_v1)
 
 
 # Root endpoint

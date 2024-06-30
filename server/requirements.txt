@@ -8,6 +8,8 @@ psycopg2-binary
 python_jose
 pydantic~=2.7.4
 pydantic_settings
+pytest
 starlette~=0.37.2
 sqlalchemy~=2.0.30
+sqlalchemy-stubs
 uvicorn

@@ -10,14 +10,19 @@ config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+# if config.config_file_name is not None:
+fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+from app.db.session import Base
+from app.models.booking import Booking  # noqa
+from app.models.review import Review  # noqa
+from app.models.service import Service  # noqa
+from app.models.token import Token  # noqa
+from app.models.user import User  # noqa
+
+target_metadata = Base.metadata
 
 
 # other values from the config, defined by the needs of env.py,
@@ -64,9 +69,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 from app.db.session import Base
 
 
-class UserRole(enum.Enum):
+class UserRole(str, enum.Enum):
     admin = "admin"
     customer = "customer"
     provider = "provider"
@@ -18,6 +18,7 @@ class User(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
+    name = Column(String)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
     role = Column(Enum(UserRole), default=UserRole.customer)
