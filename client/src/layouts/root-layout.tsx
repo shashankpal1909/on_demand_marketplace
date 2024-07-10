@@ -1,39 +1,35 @@
 import {
-  ForkLeft,
-  ForkRight,
-  Inbox,
-  Mail,
-  MoveToInboxRounded,
+  Dashboard,
+  DesignServices,
+  Home,
+  RoomServiceSharp,
+  Settings,
 } from "@mui/icons-material";
 import {
   Box,
-  Button,
   Divider,
   Drawer,
-  IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Toolbar,
-  styled,
-  useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 
-import { useAppDispatch } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 
 import Footer from "@/components/footer";
 import Header from "@/components/header";
+import LoadingComponent from "@/components/loading";
 
 import { getCurrentUser } from "@/features/auth/thunks";
 
-const drawerWidth = 240;
-
 function RootLayout() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { loading } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(getCurrentUser());
@@ -42,36 +38,47 @@ function RootLayout() {
   const [open, setOpen] = useState(false);
 
   const toggleDrawer = (newOpen: boolean) => () => {
-    console.log("toggle drawer");
     setOpen(newOpen);
   };
 
   const DrawerList = (
     <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
       <List>
-        {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <Inbox /> : <Mail />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => navigate("/")}>
+            <ListItemIcon>
+              <Home />
+            </ListItemIcon>
+            <ListItemText primary={"Home"} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => navigate("/dashboard")}>
+            <ListItemIcon>
+              <Dashboard />
+            </ListItemIcon>
+            <ListItemText primary={"Dashboard"} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => navigate("/services")}>
+            <ListItemIcon>
+              <DesignServices />
+            </ListItemIcon>
+            <ListItemText primary={"Services"} />
+          </ListItemButton>
+        </ListItem>
       </List>
       <Divider />
       <List>
-        {["All mail", "Trash", "Spam"].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <MoveToInboxRounded /> : <Mail />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => navigate("/settings")}>
+            <ListItemIcon>
+              <Settings />
+            </ListItemIcon>
+            <ListItemText primary={"Settings"} />
+          </ListItemButton>
+        </ListItem>
       </List>
     </Box>
   );
@@ -88,7 +95,7 @@ function RootLayout() {
           {DrawerList}
         </Drawer>
         <Header toggleDrawer={toggleDrawer} />
-        <Outlet />
+        {loading ? <LoadingComponent /> : <Outlet />}
         <Footer />
       </Box>
     </Box>

@@ -91,10 +91,10 @@ export default function ChangePassword() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Reset Password
+            Change Password
           </Typography>
           <Typography variant="subtitle2" align="center">
-            Enter new password
+            Update your password
           </Typography>
           <Box
             component="form"

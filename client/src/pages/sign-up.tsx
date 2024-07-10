@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import { Alert, CircularProgress } from "@mui/material";
+import { Alert, CircularProgress, MenuItem, Select } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -9,9 +9,13 @@ import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { startTransition, useEffect } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import {
+  Link as RouterLink,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { z } from "zod";
 
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
@@ -29,6 +33,7 @@ const schema = z.object({
     .string()
     .min(3, { message: "username should be be 3-9 characters" })
     .max(12, { message: "username should be be 3-9 characters" }),
+  role: z.enum(["customer", "provider"]),
   email: z.string().email({
     message: "Please enter a valid email address",
   }),
@@ -50,6 +55,7 @@ export default function SignUp() {
     defaultValues: {
       name: "",
       email: "",
+      role: "customer",
       username: "",
       password: "",
     },
@@ -58,7 +64,7 @@ export default function SignUp() {
   const onSubmit = (values: z.infer<typeof schema>) => {
     console.log(values);
     startTransition(() => {
-      const dto: SignUpDTO = { ...values, role: "customer" };
+      const dto: SignUpDTO = values;
       dispatch(signUp(dto))
         .unwrap()
         .then(() => {
@@ -105,7 +111,20 @@ export default function SignUp() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign Up
+          Sign Up as{" "}
+          <Typography component={"span"} variant="h5" color={"primary.main"}>
+            {}
+          </Typography>
+          <Controller
+            name="role"
+            control={form.control}
+            render={({ field: { ref, ...field } }) => (
+              <Select inputRef={ref} {...field} size="small">
+                 <MenuItem value={"customer"}>Customer</MenuItem>
+                 <MenuItem value={"provider"}>Service Provider</MenuItem>
+              </Select>
+            )}
+          />
         </Typography>
         <Typography variant="subtitle2">Create New Account</Typography>
         <Box

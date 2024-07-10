@@ -13,6 +13,11 @@ import ResetPassword from "@/pages/reset-password";
 import SignInPage from "@/pages/sign-in";
 import SignUp from "@/pages/sign-up";
 
+import AddService from "./pages/add-service";
+import Dashboard from "./pages/dashboard";
+import ServiceManagement from "./pages/service-management";
+import SettingsPage from "./pages/settings";
+
 export const router = createBrowserRouter([
   {
     path: "*",
@@ -50,6 +55,28 @@ export const router = createBrowserRouter([
           {
             path: "change-password",
             element: <ChangePassword />,
+          },
+          {
+            path: "settings",
+            element: <SettingsPage />,
+          },
+          {
+            path: "dashboard",
+            element: <Dashboard />,
+          },
+          {
+            path: "services",
+            element: <Outlet />,
+            children: [
+              {
+                path: "",
+                element: <ServiceManagement />,
+              },
+              {
+                path: "add",
+                element: <AddService />,
+              },
+            ],
           },
           {
             path: "*",
