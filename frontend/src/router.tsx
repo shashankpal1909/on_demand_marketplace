@@ -11,6 +11,9 @@ import { RootErrorBoundary } from "@/pages/error";
 import SignIn from "@/pages/sign-in";
 import SignUp from "@/pages/sign-up";
 
+import CalendarNew from "./components/Calendar";
+import Grid from "./components/Grid";
+import WeeklyCalendar from "./components/WeeklyCalendar";
 import AddService from "./pages/add-service";
 import AvailabilityCalendar from "./pages/availability-calendar";
 import Calendar from "./pages/calendar";
@@ -83,8 +86,20 @@ export const router = createBrowserRouter([
             ],
           },
           {
+            path: "grid",
+            element: <Grid />,
+          },
+          {
             path: "availability-calendar",
             element: <AvailabilityCalendar />,
+          },
+          {
+            path: "weekly",
+            element: <WeeklyCalendar />,
+          },
+          {
+            path: "weekly/new",
+            element: <CalendarNew />,
           },
           {
             path: "calendar",
