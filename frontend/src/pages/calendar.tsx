@@ -1,18 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PopoverClose } from "@radix-ui/react-popover";
 import {
-  format,
+  addDays,
+  addHours,
   addMonths,
-  subMonths,
-  startOfMonth,
   endOfMonth,
-  startOfWeek,
   endOfWeek,
+  format,
   isSameDay,
   isSameMonth,
   isToday,
-  addDays,
-  addHours,
+  startOfMonth,
+  startOfWeek,
+  subMonths,
 } from "date-fns";
 import type React from "react";
 import type { PropsWithChildren } from "react";
@@ -58,8 +58,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 
+import TimeSchedule from "@/components/TimeSchedule";
 import { TimeSlotPicker } from "@/components/component/time-slot-picker";
 
 import { cn } from "@/lib/utils";
@@ -163,18 +165,19 @@ const schema = z.object({
     message: "You have to select at least one item.",
   }),
 });
-
+const FormSchema = z.object({
+  marketing_emails: z.boolean().default(false).optional(),
+  security_emails: z.boolean(),
+});
 function AvailabilityForm() {
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
     defaultValues: {
-      days: ["mon", "tue"],
+      security_emails: true,
     },
   });
 
-  const { toast } = useToast();
-
-  function onSubmit(data: z.infer<typeof schema>) {
+  function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
       title: "You submitted the following values:",
       description: (
@@ -187,58 +190,53 @@ function AvailabilityForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="days"
-          render={() => (
-            <FormItem>
-              <div className="my-4">
-                <FormLabel className="text-base">Days</FormLabel>
-                <FormDescription>
-                  Select the days you are available for providing services.
-                </FormDescription>
-              </div>
-              {days.map((day) => (
-                <FormField
-                  key={day.id}
-                  control={form.control}
-                  name="days"
-                  render={({ field }) => {
-                    return (
-                      <FormItem
-                        key={day.id}
-                        className="flex flex-row items-center space-x-2 space-y-0"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(day.id)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...field.value, day.id])
-                                : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== day.id,
-                                    ),
-                                  );
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal">
-                          {day.label}
-                        </FormLabel>
-                      </FormItem>
-                    );
-                  }}
-                />
-              ))}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div>Time Slots</div>
-        <TimeSlotPicker />
-
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+        <div className="mt-2">
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="marketing_emails"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Business Hours</FormLabel>
+                    <FormDescription>
+                      Quickly enable or disable business hours.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="security_emails"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Security emails</FormLabel>
+                    <FormDescription>
+                      Receive emails about your account security.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled
+                      aria-readonly
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
         <Button type="submit">Submit</Button>
       </form>
     </Form>
@@ -411,7 +409,8 @@ export default function Calendar() {
             <DialogHeader>
               <DialogTitle>Recurring Availability</DialogTitle>
               <DialogDescription>
-                <AvailabilityForm />
+                {/* <AvailabilityForm /> */}
+                <TimeSchedule />
               </DialogDescription>
             </DialogHeader>
           </DialogContent>

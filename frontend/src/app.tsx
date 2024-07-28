@@ -1,28 +1,9 @@
-import { Button } from "@/components/ui/button"
-import { ModeToggle } from "./components/mode-toggle"
-import { Label } from "./components/ui/label"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
-import { Input } from "@/components/ui/input"
-import { type ChangeEvent, useEffect, useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { type ChangeEvent, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -30,15 +11,36 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 
-const MAX_FILE_SIZE = 5000000
+import { ModeToggle } from "./components/mode-toggle";
+import { Label } from "./components/ui/label";
+
+const MAX_FILE_SIZE = 5000000;
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
   "image/jpg",
   "image/png",
   "image/webp",
-]
+];
 const formSchema = z.object({
   name: z.string().min(1, {
     message: "Name is required",
@@ -55,31 +57,31 @@ const formSchema = z.object({
     .instanceof(FileList)
     .optional()
     .refine(
-      fileList => {
-        if (!fileList || fileList.length === 0) return true
-        return fileList.length <= 10
+      (fileList) => {
+        if (!fileList || fileList.length === 0) return true;
+        return fileList.length <= 10;
       },
       {
         message: "You can only upload up to 10 files",
       },
     )
     .refine(
-      fileList => {
-        if (!fileList || fileList.length === 0) return true
+      (fileList) => {
+        if (!fileList || fileList.length === 0) return true;
         for (const file of fileList) {
-          return ACCEPTED_IMAGE_TYPES.includes(file.type)
+          return ACCEPTED_IMAGE_TYPES.includes(file.type);
         }
-        return true
+        return true;
       },
       { message: "Invalid image type" },
     )
     .refine(
-      fileList => {
-        if (!fileList || fileList.length === 0) return true
+      (fileList) => {
+        if (!fileList || fileList.length === 0) return true;
         for (const file of fileList) {
-          return file.size <= MAX_FILE_SIZE
+          return file.size <= MAX_FILE_SIZE;
         }
-        return true
+        return true;
       },
       {
         message: "Invalid image size",
@@ -88,28 +90,28 @@ const formSchema = z.object({
   location: z.string().min(1, {
     message: "Location is required",
   }),
-  tags: z.preprocess(a => {
-    if (typeof a === "string") return a.split(",")
-    else return []
+  tags: z.preprocess((a) => {
+    if (typeof a === "string") return a.split(",");
+    else return [];
   }, z.array(z.string())),
-})
+});
 
 function getImageData(event: ChangeEvent<HTMLInputElement>) {
-  const urls: string[] = []
+  const urls: string[] = [];
 
-  if (!event.target.files) return urls
+  if (!event.target.files) return urls;
 
   for (let file of event.target.files) {
     if (file.type.startsWith("image")) {
-      urls.push(URL.createObjectURL(file))
+      urls.push(URL.createObjectURL(file));
     }
   }
 
-  return urls
+  return urls;
 }
 
 export default function Home() {
-  const [preview, setPreview] = useState<string[]>([])
+  const [preview, setPreview] = useState<string[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -122,18 +124,18 @@ export default function Home() {
       location: "",
       tags: [],
     },
-  })
+  });
 
-  const fileRef = form.register("media")
+  const fileRef = form.register("media");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values)
+    console.log(values);
   }
   useEffect(() => {
-    console.log(preview)
-  }, [preview])
+    console.log(preview);
+  }, [preview]);
 
   return (
     <div className="home">
@@ -235,7 +237,7 @@ export default function Home() {
             </div>
             {
               <div className="grid grid-cols-6 gap-1">
-                {preview?.map(url => (
+                {preview?.map((url) => (
                   <Dialog>
                     <DialogTrigger>
                       <img src={url} width={200} alt="uploaded preview" />
@@ -264,10 +266,10 @@ export default function Home() {
                       type="file"
                       multiple
                       {...fileRef}
-                      onChange={event => {
-                        const urls = getImageData(event)
-                        setPreview(urls)
-                        fileRef.onChange(event)
+                      onChange={(event) => {
+                        const urls = getImageData(event);
+                        setPreview(urls);
+                        fileRef.onChange(event);
                       }}
                     />
                   </FormControl>
@@ -307,5 +309,5 @@ export default function Home() {
         </Form>
       </div>
     </div>
-  )
+  );
 }
