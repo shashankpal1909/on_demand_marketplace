@@ -23,5 +23,6 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     role = Column(Enum(UserRole), default=UserRole.customer)
     services = relationship("Service", back_populates="provider")
+    recurring_availabilities = relationship("Availability", back_populates="user")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

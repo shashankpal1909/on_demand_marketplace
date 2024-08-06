@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.API_BASE_URL || "http://192.168.3.101:8000/api/v1",
+  baseURL: import.meta.env.API_BASE_URL || "http://127.0.0.1:8000/api/v1",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

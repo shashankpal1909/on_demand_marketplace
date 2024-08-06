@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.endpoints import users, bookings, services, reviews, admin, notifications
+from app.api.endpoints import users, bookings, services, reviews, admin, notifications, availability
 
 app = FastAPI()
 
@@ -18,6 +18,7 @@ api_v1 = FastAPI()
 
 # Include routers
 api_v1.include_router(users.router, prefix="/users", tags=["users"])
+api_v1.include_router(availability.router, prefix="/availability", tags=["availability"])
 api_v1.include_router(services.router, prefix="/services", tags=["services"])
 api_v1.include_router(bookings.router, prefix="/bookings", tags=["bookings"])
 api_v1.include_router(reviews.router, prefix="/reviews", tags=["reviews"])

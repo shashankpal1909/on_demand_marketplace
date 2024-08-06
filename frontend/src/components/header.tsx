@@ -57,12 +57,20 @@ const Header = () => {
                 <SheetTitle>Navigation</SheetTitle>
                 <SheetDescription asChild>
                   <div className="flex flex-col text-lg space-y-2 font-semibold">
-                    <Link to={"/"}>Home</Link>
-                    <Link to={"/services"}>Services</Link>
-                    <Link to={"/availability-calendar"}>
-                      Availability Calendar
-                    </Link>
-                    <Link to={"/calendar"}>Calendar</Link>
+                    <Button variant="outline">
+                      <Link to={"/"}>Home</Link>
+                    </Button>
+                    <Button  variant="outline">
+                      <Link to={"/services"}>Services</Link>
+                    </Button>
+                    <Button  variant="outline">
+                      <Link to={"/availability-calendar"}>
+                        Availability Calendar
+                      </Link>
+                    </Button>
+                    <Button  variant="outline">
+                      <Link to={"/calendar"}>Calendar</Link>
+                    </Button>
                   </div>
                 </SheetDescription>
               </SheetHeader>

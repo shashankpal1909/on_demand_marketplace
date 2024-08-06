@@ -1,8 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { PopoverClose } from "@radix-ui/react-popover";
 import {
   addDays,
-  addHours,
   addMonths,
   endOfMonth,
   endOfWeek,
@@ -17,16 +15,13 @@ import {
 import type React from "react";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
-import { IconLeft, IconRight } from "react-day-picker";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { useForm } from "react-hook-form";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -35,15 +30,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import {
   Popover,
@@ -58,11 +44,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/components/ui/use-toast";
 
 import TimeSchedule from "@/components/TimeSchedule";
-import { TimeSlotPicker } from "@/components/component/time-slot-picker";
 
 import { cn } from "@/lib/utils";
 
@@ -128,121 +111,15 @@ const DraggableEvent: React.FC<DraggableItemProps> = ({ event }) => {
     </div>
   );
 };
-
-const days = [
-  {
-    id: "mon",
-    label: "Monday",
-  },
-  {
-    id: "tue",
-    label: "Tuesday",
-  },
-  {
-    id: "wed",
-    label: "Wednesday",
-  },
-  {
-    id: "thu",
-    label: "Thursday",
-  },
-  {
-    id: "fri",
-    label: "Friday",
-  },
-  {
-    id: "sat",
-    label: "Saturday",
-  },
-  {
-    id: "sun",
-    label: "Sunday",
-  },
-] as const;
-
-const schema = z.object({
+z.object({
   days: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one item.",
   }),
 });
-const FormSchema = z.object({
+z.object({
   marketing_emails: z.boolean().default(false).optional(),
   security_emails: z.boolean(),
 });
-function AvailabilityForm() {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      security_emails: true,
-    },
-  });
-
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
-        <div className="mt-2">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="marketing_emails"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel>Business Hours</FormLabel>
-                    <FormDescription>
-                      Quickly enable or disable business hours.
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="security_emails"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel>Security emails</FormLabel>
-                    <FormDescription>
-                      Receive emails about your account security.
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled
-                      aria-readonly
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
-  );
-}
-
 export default function Calendar() {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -256,6 +133,8 @@ export default function Calendar() {
       date: "2024-07-12",
     },
   ]);
+
+  const [timeScheduleDialogOpen, setTimeScheduleDialogOpen] = useState(false);
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
@@ -400,21 +279,12 @@ export default function Calendar() {
         </div>
       </div>
       <Separator />
-      <div>
-        <Dialog>
-          <DialogTrigger>
-            <Button variant="outline">Change</Button>
-          </DialogTrigger>
-          <DialogContent className="min-w-max">
-            <DialogHeader>
-              <DialogTitle>Recurring Availability</DialogTitle>
-              <DialogDescription>
-                {/* <AvailabilityForm /> */}
-                <TimeSchedule />
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+      <div className={"flex items-center gap-2"}>
+        <Label>Reoccurring Availability: </Label>
+        <TimeSchedule
+          open={timeScheduleDialogOpen}
+          onOpenChange={setTimeScheduleDialogOpen}
+        />
       </div>
       <div className="flex gap-2 w-full justify-between items-center">
         <div className="flex items-center gap-2">

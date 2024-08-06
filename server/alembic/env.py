@@ -21,6 +21,7 @@ from app.models.review import Review  # noqa
 from app.models.service import Service  # noqa
 from app.models.token import Token  # noqa
 from app.models.user import User  # noqa
+from app.models.availability import Availability  # noqa
 
 target_metadata = Base.metadata
 

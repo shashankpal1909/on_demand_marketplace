@@ -10,8 +10,8 @@ class ServiceBase(BaseModel):
     title: str
     category: str
     description: str
-    price: float
-    price_type: str
+    pricing: float
+    pricing_type: str
     media: list[UploadFile] | None
     location: str
     tags: list[str]

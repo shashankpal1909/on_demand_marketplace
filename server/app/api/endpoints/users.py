@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -69,7 +70,11 @@ def login(
         db: Session = Depends(dependencies.get_db),
 ):
     db_user = db.query(UserModel).filter(
-        UserModel.username == user.username or UserModel.email == user.username).first()
+        or_(UserModel.username == user.username, UserModel.email == user.username)).first()
+
+    print(user.username, user.password)
+    print(db_user)
+
     if not db_user or not security.verify_password(
             user.password, db_user.hashed_password
     ):

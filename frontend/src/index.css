@@ -1,6 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..400;1,300..400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  font-family: "Rubik", "Lato", sans-serif;
+}
 
 @layer base {
   :root {

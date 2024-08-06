@@ -26,3 +26,14 @@ export interface ChangePasswordDTO {
   current_password: string;
   new_password: string;
 }
+
+export interface CreateServiceDTO {
+  name: string;
+  category: string;
+  description: string;
+  pricingType: "fixed" | "hourly";
+  pricing: number;
+  location: string;
+  tags: string[];
+  media?: FileList;
+}

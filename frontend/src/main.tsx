@@ -1,14 +1,12 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
-import { RouterProvider } from "react-router-dom";
 
 import { store } from "@/app/store";
 
-import { ThemeProvider } from "@/components/theme-provider";
+import App from "@/app";
 
 import "./index.css";
-import { router } from "./router";
 
 const container = document.getElementById("root");
 if (container) {
@@ -17,9 +15,7 @@ if (container) {
   root.render(
     <React.StrictMode>
       <Provider store={store}>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <RouterProvider router={router} />
-        </ThemeProvider>
+        <App />
       </Provider>
     </React.StrictMode>,
   );

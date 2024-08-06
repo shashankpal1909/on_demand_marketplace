@@ -1,7 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ChangeEvent, useEffect, useState } from "react";
+import { type ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+
+import servicesService from "@/api/services/services-service";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,8 +34,8 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
 
-import { ModeToggle } from "@/components/mode-toggle";
 import RequireAuth from "@/components/require-auth";
 
 const MAX_FILE_SIZE = 5000000;
@@ -129,15 +132,25 @@ export default function AddService() {
   });
 
   const fileRef = form.register("media");
+  const navigate = useNavigate();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    servicesService
+      .createService(values)
+      .then(() => {
+        toast({
+          title: "Service created successfully",
+        });
+        navigate(`/services`);
+      })
+      .catch((err) => {
+        toast({
+          variant: "destructive",
+          title: "Something went wrong",
+          description: err.message,
+        });
+      });
   }
-  useEffect(() => {
-    console.log(preview);
-  }, [preview]);
 
   return (
     <RequireAuth>
@@ -232,31 +245,54 @@ export default function AddService() {
                 )}
               />
             </div>
-            {
-              <div className="grid grid-cols-6 gap-1">
-                {preview?.map((url) => (
-                  <Dialog>
-                    <DialogTrigger>
-                      <img src={url} width={200} alt="uploaded preview" />
-                    </DialogTrigger>
-                    <DialogContent className="lg:max-w-[75%] max-w-full">
-                      <DialogHeader>
-                        <DialogTitle>Preview</DialogTitle>
-                        <DialogDescription>
-                          <img src={url} alt="uploaded preview" />
-                        </DialogDescription>
-                      </DialogHeader>
-                    </DialogContent>
-                  </Dialog>
-                ))}
-              </div>
-            }
+
             <FormField
               control={form.control}
               name="media"
               render={() => (
                 <FormItem>
                   <FormLabel>Media</FormLabel>
+                  {
+                    <div className="grid grid-cols-6 gap-1">
+                      {preview?.map((url) => (
+                        <Dialog key={url}>
+                          <DialogTrigger>
+                            {/*<div className={"relative"}>*/}
+                            <img src={url} width={200} alt="uploaded preview" />
+                            {/*<Button*/}
+                            {/*  variant={"outline"}*/}
+                            {/*  size={"icon"}*/}
+                            {/*  className={"absolute top-1 right-1 w-6 h-6"}*/}
+                            {/*  onClick={(event) => {*/}
+                            {/*    event.preventDefault();*/}
+                            {/*    //   delete this image*/}
+                            {/*    setPreview((preview) =>*/}
+                            {/*      preview.filter((img) => img !== url),*/}
+                            {/*    );*/}
+                            {/*  }}*/}
+                            {/*>*/}
+                            {/*  <X className={"w-[1.2rem] h-[1.2rem]"} />*/}
+                            {/*</Button>*/}
+                            {/*</div>*/}
+                          </DialogTrigger>
+                          <DialogContent className="lg:max-w-[75%] max-w-full">
+                            <DialogHeader>
+                              <DialogTitle>Preview</DialogTitle>
+                              <DialogDescription
+                                className={"flex justify-center"}
+                              >
+                                <img
+                                  src={url}
+                                  className={"rounded-md h-[75vh]"}
+                                  alt="uploaded preview"
+                                />
+                              </DialogDescription>
+                            </DialogHeader>
+                          </DialogContent>
+                        </Dialog>
+                      ))}
+                    </div>
+                  }
                   <FormControl>
                     <Input
                       className="dark:file:text-foreground"
