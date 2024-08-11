@@ -1,7 +1,10 @@
 import { Outlet, createBrowserRouter } from "react-router-dom";
 
+import RequireAuth from "@/components/require-auth";
+
 import RootLayout from "@/layouts/root-layout";
 
+import EditServicePage from "@/pages/edit-service";
 // import ChangePassword from "@/pages/change-password";
 import { RootErrorBoundary } from "@/pages/error";
 // import ForgotPassword from "@/pages/forgot-password";
@@ -73,11 +76,23 @@ export const router = createBrowserRouter([
             children: [
               {
                 path: "",
-                element: <Services />,
+                element: (
+                  <RequireAuth>
+                    <Services />
+                  </RequireAuth>
+                ),
               },
               {
                 path: "add",
-                element: <AddService />,
+                element: (
+                  <RequireAuth>
+                    <AddService />
+                  </RequireAuth>
+                ),
+              },
+              {
+                path: ":serviceId/edit",
+                element: <EditServicePage />,
               },
               {
                 path: "*",

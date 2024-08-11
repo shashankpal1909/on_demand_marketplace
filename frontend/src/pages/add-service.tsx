@@ -1,5 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ChangeEvent, useState } from "react";
+import { X } from "lucide-react";
+import type { ChangeEvent } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -33,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { InputTags } from "@/components/ui/tags-input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 
@@ -45,78 +48,37 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/png",
   "image/webp",
 ];
+const MAX_FILES = 10; // Maximum number of images allowed
 
 const formSchema = z.object({
-  name: z.string().min(1, {
-    message: "Name is required",
-  }),
-  category: z.string().min(1, {
-    message: "Category is required",
-  }),
-  description: z.string().min(1, {
-    message: "Description is required",
-  }),
+  name: z.string().min(1, { message: "Name is required" }),
+  category: z.string().min(1, { message: "Category is required" }),
+  description: z.string().min(1, { message: "Description is required" }),
   pricingType: z.enum(["fixed", "hourly"]),
   pricing: z.coerce.number().min(1, { message: "Price is required" }),
   media: z
-    .instanceof(FileList)
+    .array(z.instanceof(File))
     .optional()
     .refine(
-      (fileList) => {
-        if (!fileList || fileList.length === 0) return true;
-        return fileList.length <= 10;
-      },
+      (files) =>
+        files?.every(
+          (file) =>
+            file.size <= MAX_FILE_SIZE &&
+            ACCEPTED_IMAGE_TYPES.includes(file.type),
+        ),
       {
-        message: "You can only upload up to 10 files",
-      },
-    )
-    .refine(
-      (fileList) => {
-        if (!fileList || fileList.length === 0) return true;
-        for (const file of fileList) {
-          return ACCEPTED_IMAGE_TYPES.includes(file.type);
-        }
-        return true;
-      },
-      { message: "Invalid image type" },
-    )
-    .refine(
-      (fileList) => {
-        if (!fileList || fileList.length === 0) return true;
-        for (const file of fileList) {
-          return file.size <= MAX_FILE_SIZE;
-        }
-        return true;
-      },
-      {
-        message: "Invalid image size",
+        message: "Invalid file type or size",
       },
     ),
-  location: z.string().min(1, {
-    message: "Location is required",
-  }),
-  tags: z.preprocess((a) => {
-    if (typeof a === "string") return a.split(",");
-    else return [];
-  }, z.array(z.string())),
+  location: z.string().min(1, { message: "Location is required" }),
+  tags: z.array(z.string()),
 });
-
-function getImageData(event: ChangeEvent<HTMLInputElement>) {
-  const urls: string[] = [];
-
-  if (!event.target.files) return urls;
-
-  for (let file of event.target.files) {
-    if (file.type.startsWith("image")) {
-      urls.push(URL.createObjectURL(file));
-    }
-  }
-
-  return urls;
-}
 
 export default function AddService() {
   const [preview, setPreview] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]); // Track selected files
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement | null>(null); // Ref for hidden input
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -128,19 +90,54 @@ export default function AddService() {
       pricing: 1,
       location: "",
       tags: [],
+      media: [],
     },
   });
 
-  const fileRef = form.register("media");
-  const navigate = useNavigate();
+  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const newFiles = Array.from(event.target.files || []);
+
+    // Clear file input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    // Check if the new files combined with the existing ones exceed the limit
+    if (files.length + newFiles.length > MAX_FILES) {
+      toast({
+        variant: "destructive",
+        title: "File limit exceeded",
+        description: `You can only upload a maximum of ${MAX_FILES} images.`,
+      });
+      return;
+    }
+
+    const combinedFiles = [...files, ...newFiles];
+    setFiles(combinedFiles);
+
+    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+    setPreview((prevPreview) => [...prevPreview, ...newPreviews]);
+
+    // Update the form state with the combined files
+    form.setValue("media", combinedFiles);
+  }
+
+  function handleRemoveFile(index: number) {
+    const newFiles = [...files];
+    newFiles.splice(index, 1); // Remove the selected file from the list
+    setFiles(newFiles);
+
+    const newPreviews = [...preview];
+    newPreviews.splice(index, 1); // Remove the corresponding preview
+    setPreview(newPreviews);
+
+    // Update the form state with the modified files
+    form.setValue("media", newFiles);
+  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     servicesService
       .createService(values)
       .then(() => {
-        toast({
-          title: "Service created successfully",
-        });
+        toast({ title: "Service created successfully" });
         navigate(`/services`);
       })
       .catch((err) => {
@@ -150,6 +147,10 @@ export default function AddService() {
           description: err.message,
         });
       });
+  }
+
+  function openFileDialog() {
+    fileInputRef.current?.click(); // Programmatically open the file dialog
   }
 
   return (
@@ -252,59 +253,58 @@ export default function AddService() {
               render={() => (
                 <FormItem>
                   <FormLabel>Media</FormLabel>
-                  {
-                    <div className="grid grid-cols-6 gap-1">
-                      {preview?.map((url) => (
-                        <Dialog key={url}>
+                  <div className="grid grid-cols-6 gap-2">
+                    {preview.map((url, index) => (
+                      <div key={url} className="relative">
+                        <Dialog>
                           <DialogTrigger>
-                            {/*<div className={"relative"}>*/}
-                            <img src={url} width={200} alt="uploaded preview" />
-                            {/*<Button*/}
-                            {/*  variant={"outline"}*/}
-                            {/*  size={"icon"}*/}
-                            {/*  className={"absolute top-1 right-1 w-6 h-6"}*/}
-                            {/*  onClick={(event) => {*/}
-                            {/*    event.preventDefault();*/}
-                            {/*    //   delete this image*/}
-                            {/*    setPreview((preview) =>*/}
-                            {/*      preview.filter((img) => img !== url),*/}
-                            {/*    );*/}
-                            {/*  }}*/}
-                            {/*>*/}
-                            {/*  <X className={"w-[1.2rem] h-[1.2rem]"} />*/}
-                            {/*</Button>*/}
-                            {/*</div>*/}
+                            <img
+                              src={url}
+                              width={"200px"}
+                              alt="uploaded preview"
+                              className="rounded"
+                            />
                           </DialogTrigger>
                           <DialogContent className="lg:max-w-[75%] max-w-full">
                             <DialogHeader>
                               <DialogTitle>Preview</DialogTitle>
-                              <DialogDescription
-                                className={"flex justify-center"}
-                              >
+                              <DialogDescription className="flex justify-center">
                                 <img
                                   src={url}
-                                  className={"rounded-md h-[75vh]"}
+                                  className="rounded-md h-[75vh]"
                                   alt="uploaded preview"
                                 />
                               </DialogDescription>
                             </DialogHeader>
                           </DialogContent>
                         </Dialog>
-                      ))}
-                    </div>
-                  }
+                        <X
+                          onClick={() => handleRemoveFile(index)}
+                          className={
+                            "cursor-pointer absolute bg-destructive m-1 text-white rounded-full top-0 right-0 z-10 w-[1.2rem] h-[1.2rem]"
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
                   <FormControl>
-                    <Input
-                      className="dark:file:text-foreground"
-                      type="file"
-                      multiple
-                      {...fileRef}
-                      onChange={(event) => {
-                        const urls = getImageData(event);
-                        setPreview(urls);
-                        fileRef.onChange(event);
-                      }}
-                    />
+                    <>
+                      <Button
+                        type="button"
+                        disabled={files.length >= MAX_FILES}
+                        onClick={openFileDialog}
+                      >
+                        Choose Files
+                      </Button>
+                      <Input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept={".jpg,.jpeg,.png"}
+                      />
+                    </>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -323,14 +323,27 @@ export default function AddService() {
                 </FormItem>
               )}
             />
+            {/*<FormField*/}
+            {/*  control={form.control}*/}
+            {/*  name="tags"*/}
+            {/*  render={({ field }) => (*/}
+            {/*    <FormItem>*/}
+            {/*      <FormLabel>Tags</FormLabel>*/}
+            {/*      <FormControl>*/}
+            {/*        <Input {...field} />*/}
+            {/*      </FormControl>*/}
+            {/*      <FormMessage />*/}
+            {/*    </FormItem>*/}
+            {/*  )}*/}
+            {/*/>*/}
             <FormField
               control={form.control}
               name="tags"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tags</FormLabel>
+                  <FormLabel>Tag(s)</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <InputTags {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

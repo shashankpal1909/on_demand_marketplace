@@ -35,5 +35,9 @@ export interface CreateServiceDTO {
   pricing: number;
   location: string;
   tags: string[];
-  media?: FileList;
+  media?: File[];
+}
+
+export interface UpdateServiceDTO extends CreateServiceDTO {
+  serviceId: string;
 }

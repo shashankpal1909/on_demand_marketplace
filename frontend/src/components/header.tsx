@@ -4,7 +4,7 @@ import { PopoverArrow, PopoverClose } from "@radix-ui/react-popover";
 import { LogOut } from "lucide-react";
 import { IoMdCloseCircleOutline } from "react-icons/io";
 import { MdClose, MdMenu, MdNotificationsNone } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -37,6 +38,7 @@ import { Separator } from "./ui/separator";
 
 const Header = () => {
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const user = useAppSelector((state) => state.auth.user);
   const notifications = useAppSelector(
     (state) => state.notifications.recentNotifications,
@@ -57,20 +59,60 @@ const Header = () => {
                 <SheetTitle>Navigation</SheetTitle>
                 <SheetDescription asChild>
                   <div className="flex flex-col text-lg space-y-2 font-semibold">
-                    <Button variant="outline">
-                      <Link to={"/"}>Home</Link>
-                    </Button>
-                    <Button  variant="outline">
-                      <Link to={"/services"}>Services</Link>
-                    </Button>
-                    <Button  variant="outline">
-                      <Link to={"/availability-calendar"}>
-                        Availability Calendar
+                    <SheetClose asChild>
+                      <Link to={"/"}>
+                        <Button
+                          variant={
+                            location.pathname === "/" ? "default" : "outline"
+                          }
+                          className={"w-full"}
+                        >
+                          Home
+                        </Button>
                       </Link>
-                    </Button>
-                    <Button  variant="outline">
-                      <Link to={"/calendar"}>Calendar</Link>
-                    </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link to={"/services"}>
+                        <Button
+                          variant={
+                            location.pathname === "/services"
+                              ? "default"
+                              : "outline"
+                          }
+                          className={"w-full"}
+                        >
+                          Services
+                        </Button>
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link to={"/availability-calendar"}>
+                        <Button
+                          variant={
+                            location.pathname === "/availability-calendar"
+                              ? "default"
+                              : "outline"
+                          }
+                          className={"w-full"}
+                        >
+                          Availability Calendar
+                        </Button>
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link to={"/calendar"}>
+                        <Button
+                          variant={
+                            location.pathname === "/calendar"
+                              ? "default"
+                              : "outline"
+                          }
+                          className={"w-full"}
+                        >
+                          Calendar
+                        </Button>
+                      </Link>
+                    </SheetClose>
                   </div>
                 </SheetDescription>
               </SheetHeader>
