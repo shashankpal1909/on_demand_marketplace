@@ -1,20 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { startTransition, useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { MdError, MdVerified } from "react-icons/md";
-import {
-  Link,
-  Link as RouterLink,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -41,18 +35,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 import InfoComponent from "@/components/info";
 
@@ -63,52 +45,25 @@ import type { SignUpDTO } from "@/lib/dtos";
 
 const schema = z.object({
   name: z.string().min(1, {
-    message: "Name is required",
+    message: "Please enter your full name",
   }),
   username: z
-    .string()
-    .min(3, { message: "username should be be 3-9 characters" })
-    .max(12, { message: "username should be be 3-9 characters" }),
-  // role: z.enum(["customer", "provider"]),
+    .string({ message: "Please enter your username" })
+    .min(3, { message: "Username should be 3-12 characters" })
+    .max(12, { message: "Username should be 3-12 characters" }),
   email: z.string().email({
-    message: "Please enter a valid email address",
+    message: "Please enter a valid email address.",
   }),
   password: z.string().min(6, {
-    message: "Password should be at least 6 characters long",
+    message: "Password should be at least 6 characters.",
   }),
 });
 
 export default function SignUp() {
-  const { user, error, loading, success } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { user } = useAppSelector((state) => state.auth);
   const [role, setRole] = useState<string>("customer");
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
-  const form = useForm<z.infer<typeof schema>>({
-    mode: "onSubmit",
-    resolver: zodResolver(schema),
-    defaultValues: {
-      name: "",
-      email: "",
-      username: "",
-      password: "",
-    },
-  });
-
-  const onSubmit = (values: z.infer<typeof schema>) => {
-    console.log(values);
-    startTransition(() => {
-      const dto: SignUpDTO = { ...values, role };
-      dispatch(signUp(dto))
-        .unwrap()
-        .then(() => {
-          navigate("/");
-        })
-        .catch(() => {});
-    });
-  };
 
   useEffect(() => {
     if (user) {
@@ -155,112 +110,13 @@ export default function SignUp() {
             </DropdownMenu>
           </CardTitle>
           <CardDescription>
-            {role === "doctor"
-              ? "Create your account to start connecting with patients."
-              : "Create your account to easily schedule appointments with doctors."}
+            {role === "provider"
+              ? "Create your account to easily sell your services."
+              : "Create your account to connect with service providers."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form
-              className="grid w-full gap-4"
-              onSubmit={form.handleSubmit(onSubmit)}
-            >
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={loading}
-                          placeholder="John Doe"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>User Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={loading}
-                          placeholder="john.doe"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={loading}
-                          placeholder="john.doe@example.com"
-                          type="email"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={loading}
-                          placeholder="******"
-                          type="password"
-                          autoComplete="new-password"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              {error && (
-                <InfoComponent
-                  variant={"error"}
-                  title={"Error"}
-                  description={error}
-                  Icon={MdError}
-                />
-              )}
-              {success && (
-                <InfoComponent
-                  variant={"success"}
-                  title={"Success"}
-                  description={success}
-                  Icon={MdVerified}
-                />
-              )}
-              <Button disabled={loading} type="submit" className="w-full">
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Continue
-              </Button>
-            </form>
-          </Form>
+          <SignUpForm role={role} />
         </CardContent>
         <CardFooter className="flex flex-col w-full">
           <div className="text-sm">
@@ -272,5 +128,135 @@ export default function SignUp() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+type SignUpFormProps = {
+  role: "customer" | "provider";
+};
+
+export function SignUpForm(props: Readonly<SignUpFormProps>) {
+  const { error, loading, success } = useAppSelector((state) => state.auth);
+
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
+  const form = useForm<z.infer<typeof schema>>({
+    mode: "onSubmit",
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: "",
+      email: "",
+      username: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof schema>) => {
+    console.log(values);
+    startTransition(() => {
+      const dto: SignUpDTO = { ...values, role: props.role };
+      dispatch(signUp(dto))
+        .unwrap()
+        .then(() => {
+          navigate("/");
+        })
+        .catch(() => {});
+    });
+  };
+
+  return (
+    <Form {...form}>
+      <form
+        className="grid w-full gap-4"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl>
+                  <Input {...field} disabled={loading} placeholder="John Doe" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>User Name</FormLabel>
+                <FormControl>
+                  <Input {...field} disabled={loading} placeholder="john.doe" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled={loading}
+                    placeholder="john.doe@example.com"
+                    type="email"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled={loading}
+                    placeholder="******"
+                    type="password"
+                    autoComplete="new-password"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        {error && (
+          <InfoComponent
+            variant={"error"}
+            title={"Error"}
+            description={error}
+            Icon={MdError}
+          />
+        )}
+        {success && (
+          <InfoComponent
+            variant={"success"}
+            title={"Success"}
+            description={success}
+            Icon={MdVerified}
+          />
+        )}
+        <Button disabled={loading} type="submit" className="w-full">
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Continue
+        </Button>
+      </form>
+    </Form>
   );
 }

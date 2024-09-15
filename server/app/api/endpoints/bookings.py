@@ -13,9 +13,9 @@ router = APIRouter()
 
 @router.post("/", response_model=BookingSchema)
 def create_booking(
-        booking: BookingCreate,
-        db: Session = Depends(dependencies.get_db),
-        current_user: UserModel = Depends(dependencies.get_current_user),
+    booking: BookingCreate,
+    db: Session = Depends(dependencies.get_db),
+    current_user: UserModel = Depends(dependencies.get_current_user),
 ):
     db_booking = BookingModel(**booking.dict(), customer_id=current_user.id)
     db.add(db_booking)

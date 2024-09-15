@@ -1,105 +1,29 @@
-import { Edit } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import servicesService from "@/api/services/services-service";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
-interface Tag {
-  service_id: string;
-  id: string;
-  text: string;
-}
+import Loading from "@/components/loading";
+import ServiceCard from "@/components/service-card";
 
-interface Service {
-  id: string;
-  pricing: number;
-  location: string;
-  created_at: string;
-  title: string;
-  description: string;
-  pricing_type: "fixed" | "hourly";
-  provider_id: string;
-  updated_at: string | null;
-  tags: Tag[];
-}
+import type { Service } from "@/lib/types/services";
 
-interface ServiceCardProps {
-  service: Service;
-}
-
-const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
-  const navigate = useNavigate();
-
-  return (
-    <TooltipProvider delayDuration={0}>
-      <div className="border rounded-lg overflow-hidden">
-        <div className="flex justify-between items-center px-6 py-4">
-          <div>
-            <h2 className="text-xl font-semibold">{service.title}</h2>
-            <p className="text-sm">{service.description}</p>
-          </div>
-          <div>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button
-                  size={"icon"}
-                  variant={"outline"}
-                  onClick={() => navigate(`/services/${service.id}/edit`)}
-                >
-                  <Edit className={"w-[1.2rem] h-[1.2rem]"} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent asChild>
-                <Label>Edit Service</Label>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </div>
-        <div className="px-6 py-4 border-t">
-          <div className="font-medium">
-            ${service.pricing}{" "}
-            <span className="text-sm">/ {service.pricing_type}</span>
-          </div>
-          <div className="text-sm">{service.location}</div>
-          <div className="text-xs">
-            Created at: {new Date(service.created_at).toLocaleDateString()}
-          </div>
-        </div>
-        <div className="px-6 py-4">
-          {service.tags.map((tag) => (
-            <Badge key={tag.id} className="mr-2">
-              {tag.text}
-            </Badge>
-          ))}
-        </div>
-      </div>
-    </TooltipProvider>
-  );
-};
+import { useRequest } from "@/hooks/use-request";
 
 export default function Services() {
   const [services, setServices] = useState<Service[]>([]);
 
+  const { loading: getAllServicesLoading, request: getAllServices } =
+    useRequest(() => servicesService.getAllServices(), {
+      successCallback: (result) => setServices(result),
+    });
+
   useEffect(() => {
-    servicesService
-      .getAllServices()
-      .then((response) => {
-        setServices(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    getAllServices();
   }, []);
 
   return (
@@ -118,12 +42,19 @@ export default function Services() {
         </div>
       </div>
       <Separator className="my-6" />
-      {/*<pre>{JSON.stringify(services, null, 2)}</pre>*/}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {services.map((service) => (
-          <ServiceCard key={service.id} service={service} />
-        ))}
-      </div>
+      {getAllServicesLoading ? (
+        <Loading />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {services.map((service) => (
+            <ServiceCard
+              key={service.id}
+              service={service}
+              getAllServices={getAllServices}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

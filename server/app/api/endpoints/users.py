@@ -18,18 +18,21 @@ from app.schemas.user import (
     UserChangePassword,
     AuthToken,
     UserForgotPassword,
-    UserResetPassword, UserSignUpResponse,
+    UserResetPassword,
+    UserSignUpResponse,
 )
 from app.utils.mail import send_verification_email, send_reset_password_email
 
 router = APIRouter()
 
 
-@router.post("/sign-up", response_model=UserSignUpResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/sign-up", response_model=UserSignUpResponse, status_code=status.HTTP_201_CREATED
+)
 def register_service_provider(
-        req_body: UserCreate,
-        background_tasks: BackgroundTasks,
-        db: Session = Depends(dependencies.get_db),
+    req_body: UserCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(dependencies.get_db),
 ):
     if req_body.role == UserRole.admin:
         raise HTTPException(status_code=403, detail="forbidden")
@@ -66,17 +69,22 @@ def register_service_provider(
 
 @router.post("/sign-in", response_model=AuthToken, status_code=status.HTTP_200_OK)
 def login(
-        user: Annotated[OAuth2PasswordRequestForm, Depends()],
-        db: Session = Depends(dependencies.get_db),
+    user: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Session = Depends(dependencies.get_db),
 ):
-    db_user = db.query(UserModel).filter(
-        or_(UserModel.username == user.username, UserModel.email == user.username)).first()
+    db_user = (
+        db.query(UserModel)
+        .filter(
+            or_(UserModel.username == user.username, UserModel.email == user.username)
+        )
+        .first()
+    )
 
     print(user.username, user.password)
     print(db_user)
 
     if not db_user or not security.verify_password(
-            user.password, db_user.hashed_password
+        user.password, db_user.hashed_password
     ):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     access_token = security.create_access_token(data={"sub": db_user.username})
@@ -85,8 +93,8 @@ def login(
 
 @router.post("/verify", status_code=status.HTTP_204_NO_CONTENT)
 def verify_email(
-        token: str,
-        db: Session = Depends(dependencies.get_db),
+    token: str,
+    db: Session = Depends(dependencies.get_db),
 ):
     token = db.query(TokenModel).filter(TokenModel.id == token).first()
     if not token:
@@ -108,12 +116,12 @@ def verify_email(
 
 @router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
 def change_password(
-        req_body: UserChangePassword,
-        current_user: UserModel = Depends(dependencies.get_current_user),
-        db: Session = Depends(dependencies.get_db),
+    req_body: UserChangePassword,
+    current_user: UserModel = Depends(dependencies.get_current_user),
+    db: Session = Depends(dependencies.get_db),
 ):
     if not security.verify_password(
-            req_body.current_password, current_user.hashed_password
+        req_body.current_password, current_user.hashed_password
     ):
         raise HTTPException(status_code=401, detail="Invalid current password")
 
@@ -125,9 +133,9 @@ def change_password(
 
 @router.post("/forgot-password", status_code=status.HTTP_204_NO_CONTENT)
 def forgot_password(
-        req_body: UserForgotPassword,
-        background_tasks: BackgroundTasks,
-        db: Session = Depends(dependencies.get_db),
+    req_body: UserForgotPassword,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(dependencies.get_db),
 ):
     db_user = db.query(UserModel).filter(UserModel.email == req_body.email).first()
     if not db_user:
@@ -145,8 +153,8 @@ def forgot_password(
 
 @router.post("/reset-password", status_code=status.HTTP_204_NO_CONTENT)
 def reset_password(
-        req_body: UserResetPassword,
-        db: Session = Depends(dependencies.get_db),
+    req_body: UserResetPassword,
+    db: Session = Depends(dependencies.get_db),
 ):
     db_token = db.query(TokenModel).filter(TokenModel.id == req_body.token).first()
     if not db_token or db_token.expires_at <= datetime.now():
@@ -164,7 +172,7 @@ def reset_password(
 
 @router.get("/current-user", status_code=status.HTTP_200_OK)
 def get_current_user(
-        current_user: UserModel = Depends(dependencies.get_current_user),
+    current_user: UserModel = Depends(dependencies.get_current_user),
 ):
     del current_user.hashed_password
     return current_user

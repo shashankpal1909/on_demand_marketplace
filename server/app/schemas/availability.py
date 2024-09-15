@@ -17,7 +17,7 @@ class RecurringAvailability(BaseModel):
                 "day": "monday",
                 "start_time": "09:00:00.000Z",
                 "end_time": "18:00:00.000Z",
-                "is_available": True
+                "is_available": True,
             }
         }
     }

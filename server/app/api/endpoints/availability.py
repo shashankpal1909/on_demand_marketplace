@@ -17,15 +17,19 @@ logger = logging.getLogger(__name__)
 
 @router.post("", status_code=status.HTTP_204_NO_CONTENT)
 def save_recurring_availability(
-        req_body: RecurringAvailabilityRequestBody,
-        current_user: User = Depends(dependencies.get_current_user),
-        db: Session = Depends(dependencies.get_db),
+    req_body: RecurringAvailabilityRequestBody,
+    current_user: User = Depends(dependencies.get_current_user),
+    db: Session = Depends(dependencies.get_db),
 ):
     for availability in req_body.availabilities:
-        db_availability = db.query(Availability).filter(
-            Availability.user_id == current_user.id,
-            Availability.day == availability.day.strip().lower()
-        ).first()
+        db_availability = (
+            db.query(Availability)
+            .filter(
+                Availability.user_id == current_user.id,
+                Availability.day == availability.day.strip().lower(),
+            )
+            .first()
+        )
 
         if db_availability:
             db_availability.start_time = availability.start_time
@@ -37,7 +41,7 @@ def save_recurring_availability(
                 day=availability.day.strip().lower(),
                 start_time=availability.start_time,
                 end_time=availability.end_time,
-                is_available=availability.is_available
+                is_available=availability.is_available,
             )
             db.add(db_availability)
 
@@ -48,21 +52,28 @@ def save_recurring_availability(
 
 @router.get("", status_code=status.HTTP_200_OK)
 def get_all_availabilities(
-        current_user: User = Depends(dependencies.get_current_user),
-        db: Session = Depends(dependencies.get_db),
+    current_user: User = Depends(dependencies.get_current_user),
+    db: Session = Depends(dependencies.get_db),
 ):
     return db.query(Availability).filter(Availability.user_id == current_user.id).all()
 
 
 @router.get("/{day}", status_code=status.HTTP_200_OK)
 def get_availability_by_day(
-        day: str,
-        current_user: User = Depends(dependencies.get_current_user),
-        db: Session = Depends(dependencies.get_db),
+    day: str,
+    current_user: User = Depends(dependencies.get_current_user),
+    db: Session = Depends(dependencies.get_db),
 ):
-    availability = db.query(Availability).filter(
-        and_(Availability.user_id == current_user.id, Availability.day == day.strip().lower())
-    ).first()
+    availability = (
+        db.query(Availability)
+        .filter(
+            and_(
+                Availability.user_id == current_user.id,
+                Availability.day == day.strip().lower(),
+            )
+        )
+        .first()
+    )
 
     if not availability:
         raise HTTPException(status_code=404, detail="Availability not found")
@@ -72,13 +83,20 @@ def get_availability_by_day(
 
 @router.delete("/{day}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_availability_by_day(
-        day: str,
-        current_user: User = Depends(dependencies.get_current_user),
-        db: Session = Depends(dependencies.get_db),
+    day: str,
+    current_user: User = Depends(dependencies.get_current_user),
+    db: Session = Depends(dependencies.get_db),
 ):
-    availability = db.query(Availability).filter(
-        and_(Availability.user_id == current_user.id, Availability.day == day.strip().lower())
-    ).first()
+    availability = (
+        db.query(Availability)
+        .filter(
+            and_(
+                Availability.user_id == current_user.id,
+                Availability.day == day.strip().lower(),
+            )
+        )
+        .first()
+    )
 
     if availability:
         db.delete(availability)
@@ -89,10 +107,12 @@ def delete_availability_by_day(
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
 def delete_all_availabilities(
-        current_user: User = Depends(dependencies.get_current_user),
-        db: Session = Depends(dependencies.get_db),
+    current_user: User = Depends(dependencies.get_current_user),
+    db: Session = Depends(dependencies.get_db),
 ):
-    availabilities = db.query(Availability).filter(Availability.user_id == current_user.id).all()
+    availabilities = (
+        db.query(Availability).filter(Availability.user_id == current_user.id).all()
+    )
 
     if availabilities:
         for availability in availabilities:

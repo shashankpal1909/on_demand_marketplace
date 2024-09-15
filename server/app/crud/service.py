@@ -20,7 +20,7 @@ def create_service(db: Session, user: User, service: ServiceCreate) -> Service:
         location=service.location,
         pricing=service.pricing,
         pricing_type=service.pricing_type,
-        provider_id=user.id
+        provider_id=user.id,
     )
 
     db.add(db_service)
@@ -40,7 +40,9 @@ def create_service(db: Session, user: User, service: ServiceCreate) -> Service:
         # Define the file paths
         file_extension = file.filename.split(".")[-1]
         file_location = os.path.join(UPLOAD_DIRECTORY, f"{media.id}.{file_extension}")
-        compressed_file_location = os.path.join(UPLOAD_DIRECTORY, f"{media.id}_compressed.{file_extension}")
+        compressed_file_location = os.path.join(
+            UPLOAD_DIRECTORY, f"{media.id}_compressed.{file_extension}"
+        )
 
         # Save the uploaded file
         with open(file_location, "wb") as buffer:
@@ -88,7 +90,9 @@ def update_service(db: Session, db_service: Service, service: ServiceCreate) -> 
         # Define the file paths
         file_extension = file.filename.split(".")[-1]
         file_location = os.path.join(UPLOAD_DIRECTORY, f"{media.id}.{file_extension}")
-        compressed_file_location = os.path.join(UPLOAD_DIRECTORY, f"{media.id}_compressed.{file_extension}")
+        compressed_file_location = os.path.join(
+            UPLOAD_DIRECTORY, f"{media.id}_compressed.{file_extension}"
+        )
 
         # Save the uploaded file
         with open(file_location, "wb") as buffer:

@@ -1,11 +1,12 @@
 import "@fontsource-variable/overpass";
-import "@fontsource/inter";
+// import "@fontsource/inter";
 import "@fontsource/roboto";
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Toaster } from "@/components/ui/toaster";
 
 import Footer from "@/components/footer";
@@ -28,15 +29,14 @@ function RootLayout() {
   }, [dispatch]);
 
   return (
-    <div className={cn("flex min-h-[100vh]")}>
-      <div className="flex flex-grow flex-col">
-        <Header />
-        <div className="flex flex-grow">
-          {loading ? <LoadingComponent /> : <Outlet />}
-        </div>
-        <Footer />
-        <Toaster />
-      </div>
+    <div className={cn("flex flex-col h-[100svh]")}>
+      <Header />
+      <ScrollArea className="flex flex-grow flex-col justify-center items-center h-max min-h-[100svh-100px] w-[100svw] overflow-auto">
+        {loading ? <LoadingComponent /> : <Outlet />}
+        <ScrollBar orientation={"horizontal"} />
+      </ScrollArea>
+      {/*<Footer />*/}
+      <Toaster />
     </div>
   );
 }

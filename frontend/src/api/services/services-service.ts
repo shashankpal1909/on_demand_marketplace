@@ -1,6 +1,7 @@
 import apiClient from "@/api/client";
 
 import type { CreateServiceDTO, UpdateServiceDTO } from "@/lib/dtos";
+import { Service } from "@/lib/types/services";
 
 class ServicesService {
   async createService(dto: CreateServiceDTO) {
@@ -64,12 +65,17 @@ class ServicesService {
   }
 
   async getService(serviceId: string) {
-    const response = await apiClient.get(`/services/${serviceId}`);
+    const response = await apiClient.get<Service>(`/services/${serviceId}`);
     return response.data;
   }
 
   async getAllServices() {
     const response = await apiClient.get(`/services`);
+    return response.data;
+  }
+
+  async deleteService(serviceId: string) {
+    const response = await apiClient.delete(`/services/${serviceId}`);
     return response.data;
   }
 }

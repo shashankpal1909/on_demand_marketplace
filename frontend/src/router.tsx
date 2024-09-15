@@ -4,29 +4,15 @@ import RequireAuth from "@/components/require-auth";
 
 import RootLayout from "@/layouts/root-layout";
 
+import AddService from "@/pages/add-service";
+import Calendar from "@/pages/calendar";
 import EditServicePage from "@/pages/edit-service";
-// import ChangePassword from "@/pages/change-password";
 import { RootErrorBoundary } from "@/pages/error";
-// import ForgotPassword from "@/pages/forgot-password";
-// import LandingPage from "@/pages/landing";
-// import NotFoundPage from "@/pages/not-found";
-// import ResetPassword from "@/pages/reset-password";
+import LandingPage from "@/pages/landing";
+import NotFoundPage from "@/pages/not-found";
+import Services from "@/pages/services";
 import SignIn from "@/pages/sign-in";
 import SignUp from "@/pages/sign-up";
-
-import CalendarNew from "./components/Calendar";
-import Grid from "./components/Grid";
-import WeeklyCalendar from "./components/WeeklyCalendar";
-import AddService from "./pages/add-service";
-import AvailabilityCalendar from "./pages/availability-calendar";
-import Calendar from "./pages/calendar";
-import LandingPage from "./pages/landing";
-import NotFoundPage from "./pages/not-found";
-import Services from "./pages/services";
-
-// import Dashboard from "./pages/dashboard";
-// import ServiceManagement from "./pages/service-management";
-// import SettingsPage from "./pages/settings";
 
 export const router = createBrowserRouter([
   {
@@ -50,26 +36,6 @@ export const router = createBrowserRouter([
             path: "sign-up",
             element: <SignUp />,
           },
-          // {
-          //   path: "forgot-password",
-          //   element: <ForgotPassword />,
-          // },
-          // {
-          //   path: "reset-password",
-          //   element: <ResetPassword />,
-          // },
-          // {
-          //   path: "change-password",
-          //   element: <ChangePassword />,
-          // },
-          // {
-          //   path: "settings",
-          //   element: <SettingsPage />,
-          // },
-          // {
-          //   path: "dashboard",
-          //   element: <Dashboard />,
-          // },
           {
             path: "services",
             element: <Outlet />,
@@ -99,22 +65,6 @@ export const router = createBrowserRouter([
                 element: <NotFoundPage />,
               },
             ],
-          },
-          {
-            path: "grid",
-            element: <Grid />,
-          },
-          {
-            path: "availability-calendar",
-            element: <AvailabilityCalendar />,
-          },
-          {
-            path: "weekly",
-            element: <WeeklyCalendar />,
-          },
-          {
-            path: "weekly/new",
-            element: <CalendarNew />,
           },
           {
             path: "calendar",

@@ -4,6 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import File, Form, UploadFile, status
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy_searchable import search
 
 from app.api import dependencies
 from app.crud.service import create_service, update_service
@@ -22,8 +23,8 @@ def create_new_service(
         pricing_type: PricingType = Form(...),
         pricing: float = Form(...),
         location: str = Form(...),
-        tags: List[str] = Form(...),
-        media: List[UploadFile] = File(...),
+        tags: List[str] = Form([]),
+        media: List[UploadFile] = File([]),
         db: Session = Depends(dependencies.get_db),
         current_user: UserModel = Depends(dependencies.get_current_user),
 ):
@@ -46,13 +47,48 @@ def create_new_service(
 
 
 @router.get("")
-def get_services(db: Session = Depends(dependencies.get_db),
-                 current_user: UserModel = Depends(dependencies.get_current_user)):
+def get_services(
+        db: Session = Depends(dependencies.get_db),
+        current_user: UserModel = Depends(dependencies.get_current_user),
+):
     """
     This route returns all services available
     """
-    return db.query(ServiceModel).options(joinedload(ServiceModel.tags)).filter(
-        ServiceModel.provider_id == current_user.id).order_by(ServiceModel.updated_at.asc()).all()
+    return (
+        db.query(ServiceModel)
+        .options(joinedload(ServiceModel.tags))
+        .filter(ServiceModel.provider_id == current_user.id)
+        .order_by(ServiceModel.updated_at.asc())
+        .all()
+    )
+
+
+@router.get("/search")
+def search_services(
+        query: str,
+        db: Session = Depends(dependencies.get_db),
+        current_user: UserModel = Depends(dependencies.get_current_user),
+):
+    """
+    This route searches for services using a fuzzy search considering
+    all fields in the database (tags, location, title, description, category, etc.).
+    """
+    # Start with a query object
+    service_query = db.query(ServiceModel).options(joinedload(ServiceModel.tags))
+
+    # Apply the search filter to the query object
+    service_query = search(service_query, query)
+
+    # Filter by the current user
+    service_query = service_query.filter(ServiceModel.provider_id == current_user.id)
+
+    # Order by updated_at
+    services = service_query.order_by(ServiceModel.updated_at.asc()).all()
+
+    if not services:
+        raise HTTPException(status_code=404, detail="No matching services found")
+
+    return services
 
 
 @router.get("/{service_id}")
@@ -61,11 +97,14 @@ def read_service(service_id: uuid.UUID, db: Session = Depends(dependencies.get_d
     This route returns a service by its id.
 
     params
-    params
     - service_id: unique id of the service
     """
-    service = db.query(ServiceModel).options(joinedload(ServiceModel.media), joinedload(ServiceModel.tags)).filter(
-        ServiceModel.id == service_id).first()
+    service = (
+        db.query(ServiceModel)
+        .options(joinedload(ServiceModel.media), joinedload(ServiceModel.tags))
+        .filter(ServiceModel.id == service_id)
+        .first()
+    )
     if service is None:
         raise HTTPException(status_code=404, detail="Service not found")
 
@@ -81,8 +120,8 @@ def update_existing_service(
         pricing_type: PricingType = Form(...),
         pricing: float = Form(...),
         location: str = Form(...),
-        tags: List[str] = Form(...),
-        media: List[UploadFile] = File(...),
+        tags: List[str] = Form([]),
+        media: List[UploadFile] = File([]),
         db: Session = Depends(dependencies.get_db),
         current_user: UserModel = Depends(dependencies.get_current_user),
 ):
@@ -97,8 +136,12 @@ def update_existing_service(
         media=media,
     )
 
-    db_service = db.query(ServiceModel).options(joinedload(ServiceModel.media), joinedload(ServiceModel.tags)).filter(
-        ServiceModel.id == service_id).first()
+    db_service = (
+        db.query(ServiceModel)
+        .options(joinedload(ServiceModel.media), joinedload(ServiceModel.tags))
+        .filter(ServiceModel.id == service_id)
+        .first()
+    )
 
     if not db_service:
         raise HTTPException(status_code=404, detail="Service not found")
@@ -108,3 +151,21 @@ def update_existing_service(
 
     db_service = update_service(db, db_service, req_body)
     return db.query(ServiceModel).filter_by(id=db_service.id).first()
+
+
+@router.delete("/{service_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_service(
+        service_id: uuid.UUID,
+        db: Session = Depends(dependencies.get_db),
+        current_user: UserModel = Depends(dependencies.get_current_user),
+):
+    service = db.query(ServiceModel).filter_by(id=service_id).first()
+
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    if service.provider_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    db.delete(service)
+    db.commit()

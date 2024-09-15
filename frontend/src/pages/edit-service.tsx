@@ -4,9 +4,8 @@ import { X } from "lucide-react";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
-import { z } from "zod";
+import type { z } from "zod";
 
-// Maximum number of images allowed
 import servicesService from "@/api/services/services-service";
 
 import { Button } from "@/components/ui/button";
@@ -40,35 +39,12 @@ import { InputTags } from "@/components/ui/tags-input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 
-const MAX_FILE_SIZE = 5000000;
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-];
-const MAX_FILES = 10;
+import { API_BASE_URL } from "@/lib/constants";
+import { MAX_IMAGES_COUNT } from "@/lib/constants/services";
+import schema from "@/lib/schemas/services";
+import type { Service } from "@/lib/types/services";
 
-type Service = {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  location: string;
-  pricing_type: "fixed" | "hourly";
-  created_at: string;
-  pricing: number;
-  provider_id: string;
-  updated_at: null;
-  media: {
-    service_id: string;
-    url: string;
-    id: string;
-  }[];
-  tags: {
-    text: string;
-  }[];
-};
+import { useRequest } from "@/hooks/use-request";
 
 async function getFileFromUrl(
   url: string,
@@ -82,37 +58,19 @@ async function getFileFromUrl(
   });
 }
 
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  category: z.string().min(1, { message: "Category is required" }),
-  description: z.string().min(1, { message: "Description is required" }),
-  pricingType: z.enum(["fixed", "hourly"]),
-  pricing: z.coerce.number().min(1, { message: "Price is required" }),
-  media: z
-    .array(z.instanceof(File))
-    .optional()
-    .refine(
-      (files) =>
-        files?.every(
-          (file) =>
-            file.size <= MAX_FILE_SIZE &&
-            ACCEPTED_IMAGE_TYPES.includes(file.type),
-        ),
-      {
-        message: "Invalid file type or size",
-      },
-    ),
-  location: z.string().min(1, { message: "Location is required" }),
-  tags: z.array(z.string()),
-});
-
 export default function EditServicePage() {
-  const [preview, setPreview] = useState<string[]>([]);
-  const [files, setFiles] = useState<File[]>([]); // Track selected files
-  const fileInputRef = useRef<HTMLInputElement | null>(null); // Ref for hidden input
+  const { serviceId } = useParams();
+  const navigate = useNavigate();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [service, setService] = useState<Service>();
+
+  const [preview, setPreview] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
     defaultValues: {
       name: "",
       category: "",
@@ -125,11 +83,6 @@ export default function EditServicePage() {
     },
   });
 
-  const { serviceId } = useParams();
-  const navigate = useNavigate();
-
-  const [service, setService] = useState<Service>();
-
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const newFiles = Array.from(event.target.files || []);
 
@@ -137,11 +90,11 @@ export default function EditServicePage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
 
     // Check if the new files combined with the existing ones exceed the limit
-    if (files.length + newFiles.length > MAX_FILES) {
+    if (files.length + newFiles.length > MAX_IMAGES_COUNT) {
       toast({
         variant: "destructive",
         title: "File limit exceeded",
-        description: `You can only upload a maximum of ${MAX_FILES} images.`,
+        description: `You can only upload a maximum of ${MAX_IMAGES_COUNT} images.`,
       });
       return;
     }
@@ -169,7 +122,7 @@ export default function EditServicePage() {
     form.setValue("media", newFiles);
   }
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof schema>) {
     servicesService
       .updateService({ ...values, serviceId: serviceId! })
       .then(() => {
@@ -195,10 +148,7 @@ export default function EditServicePage() {
     form.setValue("description", service.description);
     form.setValue("category", service.category);
     let promises = service.media.map((file) => {
-      return getFileFromUrl(
-        `http://localhost:8000/files/${file.url}`,
-        file.url,
-      );
+      return getFileFromUrl(`${API_BASE_URL}/files/${file.url}`, file.url);
     });
     form.setValue("media", await Promise.all(promises));
     form.setValue("location", service.location);
@@ -226,6 +176,22 @@ export default function EditServicePage() {
       });
     }
   }, [service]);
+
+  const {} = useRequest(
+    (serviceId) => servicesService.getService(serviceId),
+    {
+      successCallback: (response) => {
+        setService(response);
+      },
+      errorCallback: (error) => {
+        if (error instanceof AxiosError) {
+          if (error.response?.status === 404) {
+            navigate(`/not-found`);
+          }
+        }
+      },
+    },
+  );
 
   useEffect(() => {
     if (serviceId) {
@@ -380,7 +346,7 @@ export default function EditServicePage() {
                   <>
                     <Button
                       type="button"
-                      disabled={files.length >= MAX_FILES}
+                      disabled={files.length >= MAX_IMAGES_COUNT}
                       onClick={openFileDialog}
                     >
                       Choose Files

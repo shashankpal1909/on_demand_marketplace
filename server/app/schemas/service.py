@@ -14,7 +14,7 @@ class ServiceBase(BaseModel):
     pricing_type: str
     media: list[UploadFile] | None
     location: str
-    tags: list[str]
+    tags: list[str] | None
 
 
 class ServiceCreate(ServiceBase):
